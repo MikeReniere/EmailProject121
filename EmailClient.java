@@ -9,27 +9,24 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.net.*;
+import java.sql.SQLOutput;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class EmailClient extends JFrame implements ActionListener,EmailConstants {
-
+    String values = "abcdefghijklmnopqrstuvwxyz "; 
     //Server-Client variables
-   BufferedReader br;
-   PrintWriter pw;
-   Socket s = null;
+   private BufferedReader br;
+   private PrintWriter pw;
+   private Socket s = null;
     //Standard variables
-   String host;
+   private String host;
    //Declaration of JFrame variables
    private JTextField jtfTo;
    private JTextField jtfFrom;
-   private JTextField jtfServer;
-   private JButton btnMessage;
-   private JButton jbConnect;
+   private JTextArea textArea = new JTextArea();
+   private JRadioButton jrbEncrypt;
 
-   //Other variables 
-   String user = "";
-   
    /*Main */
    public static void main(String[] args) {
       new EmailClient();
@@ -46,11 +43,13 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       JPanel inbox = new JPanel();
       getContentPane().add(inbox,BorderLayout.WEST);
       inbox.setLayout(new GridLayout(8, 0, 0, 0));
-   
-      btnMessage = new JButton("Message");
+
+      JButton jbMsg;
+      jbMsg = new JButton("Message");
+      JButton jbConnect;
       jbConnect = new JButton("Connect");
       inbox.add(jbConnect);
-      inbox.add(btnMessage);
+      inbox.add(jbMsg);
    	
       JPanel msgView = new JPanel();
       getContentPane().add(msgView,BorderLayout.CENTER);
@@ -61,52 +60,52 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       msgView.add(msgViewTop);
       msgViewTop.setLayout(new GridLayout(0, 2, 0, 0));
    	
-      JLabel lblNewLabel = new JLabel("To: ");
-      lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-      msgViewTop.add(lblNewLabel);
+      JLabel jlTo = new JLabel("To: ");
+      jlTo.setHorizontalAlignment(SwingConstants.RIGHT);
+      msgViewTop.add(jlTo);
    	
       jtfTo = new JTextField(10);
       msgViewTop.add(jtfTo);
       jtfTo.setColumns(10);
    	
-      JLabel lblNewLabel_1 = new JLabel("From: ");
-      lblNewLabel_1.setHorizontalAlignment(SwingConstants.RIGHT);
-      msgViewTop.add(lblNewLabel_1);
+      JLabel jlFrom = new JLabel("From: ");
+      jlFrom.setHorizontalAlignment(SwingConstants.RIGHT);
+      msgViewTop.add(jlFrom);
    	
       jtfFrom = new JTextField();
       msgViewTop.add(jtfFrom);
       jtfFrom.setColumns(10);
    	
-      JLabel lblNewLabel_2 = new JLabel("Address: ");
-      lblNewLabel_2.setHorizontalAlignment(SwingConstants.RIGHT);
-      msgViewTop.add(lblNewLabel_2);
-   	
-      jtfServer = new JTextField();
+      JLabel jlAddress = new JLabel("Address: ");
+      jlAddress.setHorizontalAlignment(SwingConstants.RIGHT);
+      msgViewTop.add(jlAddress);
+
+       JTextField jtfServer = new JTextField();
       msgViewTop.add(jtfServer);
       jtfServer.setColumns(10);
    	
-      JRadioButton rdbtnEncryptMessage = new JRadioButton("Encrypt Message");
-      msgViewTop.add(rdbtnEncryptMessage);
+      jrbEncrypt = new JRadioButton("Encrypt Message");
+      msgViewTop.add(jrbEncrypt);
    	
       JLabel label = new JLabel("");
       msgViewTop.add(label);
    	
-      JLabel lblCompose = new JLabel("Compose: ");
-      msgViewTop.add(lblCompose);
+      JLabel jlCompose = new JLabel("Compose: ");
+      msgViewTop.add(jlCompose);
    	
-      JButton btnSend = new JButton("Send ");
-      msgViewTop.add(btnSend);
+      JButton jbSend = new JButton("Send");
+      msgViewTop.add(jbSend);
    	
       JPanel msgViewBot = new JPanel();
       msgView.add(msgViewBot);
       msgViewBot.setLayout(new GridLayout(0, 1, 0, 0));
-   	
-      JTextArea textArea = new JTextArea();
+
       msgViewBot.add(textArea);
    	
       this.setVisible(true);
    
       jbConnect.addActionListener(this);
+      jbSend.addActionListener(this);
    
    }
 
@@ -115,6 +114,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    
       switch (ae.getActionCommand()){
          case "Connect":
+
             System.out.println("I got in the connect case of the client");
             host = JOptionPane.showInputDialog(this,"Enter the IP address of the server",null);
             
@@ -135,56 +135,69 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
                System.out.println("Some other exception caught!");
                e.printStackTrace();
             }
-            LoginFrame lf = new LoginFrame();
-            
-               new Thread() {
-                  public void run(){
-                     while (lf.getCurrentUser().equals("")){
-                        System.out.print("");
-                     }
-                  
-                     user = lf.getCurrentUser();
-                     System.out.println("Client current user: " + user);
-                     lf.setVisible(false);
-                     pw.println(user);
-                     pw.flush();
-                  }
-               }.start();
-            
-            
+
+
+            String name = JOptionPane.showInputDialog("Enter username: ");
+
+            System.out.println("The client received the name " + name + " from the login frame");
+            pw.println(name);
+            pw.flush();
             break;
-         case "Message":
-            if(s != null){
-               MessageHandler(br, pw);
-            }     
+
+         case "Send":
+          if(jrbEncrypt.isSelected()) {
+          String msg = textArea.getText();
+          int shift = 3;
+          System.out.println("Encrypted Message: " + Encrypt(msg, shift));
+           // pw.println("ENCRYPT");
+            //pw.flush();
+         }
+             System.out.println("Send case reached");
+             pw.println(jtfFrom.getText());
+             pw.flush();
+             System.out.println(jtfFrom.getText());
+
+             pw.println(jtfTo.getText());
+             pw.flush();
+             System.out.println(jtfTo.getText());
+
+             pw.println(textArea.getText());
+             pw.flush();
+             System.out.println(textArea.getText());
+
             break;
+          case "Messages":
+              System.out.println("In the 'messages' case");
+              pw.println("Show mail");
+              break;
+
       }
    }
    
-   public void MessageHandler(BufferedReader br, PrintWriter pw) {
-      try{
-         String hostName = InetAddress.getLocalHost().getHostName();
-         System.out.println("hostName = " + hostName);
+      public String Encrypt(String msg, int shift){
+     
+     
+      char charEnc;
+      int valEnc;
+      int newEnc;
+      String encrypted = "";
+      msg = msg.toLowerCase();
+      String [] string = msg.split(" ");
+      
+      for (int i = 0; i < msg.length(); i++) {
+         charEnc = msg.charAt(i);
+         if(Character.isLetter(charEnc)){
+            valEnc = values.indexOf(charEnc);
          
-         send("HELO " + hostName);
-         send("MAIL FROM: " + "");
-         send("RCPT TO: " + "");
-         send("DATA");
-         send("test1");
-         send("test2");
-         send(".");
-         send("QUIT");
-      }
-      catch(IOException e)
-      { e.printStackTrace();
-      }
+            newEnc = (shift + valEnc) % values.length();
+            encrypted += values.charAt(newEnc);
+         }else{
+            encrypted += (char)charEnc;
+            
+         }//end if else
+      }//end for
+      return encrypted;
    
-   }
    
-   public void send(String s){
-      if (s != null){
-         pw.println(s);
-         pw.flush();
-      }
-   }
+   }//end decipher
 }
