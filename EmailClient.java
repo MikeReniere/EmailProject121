@@ -147,10 +147,11 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
          case "Send":
           if(jrbEncrypt.isSelected()) {
           String msg = textArea.getText();
+          pw.println("ENCRYPT");
           int shift = 3;
           System.out.println("Encrypted Message: " + Encrypt(msg, shift));
            // pw.println("ENCRYPT");
-            //pw.flush();
+           //pw.flush();
          }
              System.out.println("Send case reached");
              pw.println(jtfFrom.getText());
