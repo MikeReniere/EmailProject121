@@ -42,7 +42,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       JPanel inbox = new JPanel();
       getContentPane().add(inbox,BorderLayout.WEST);
       inbox.setLayout(new GridLayout(8, 0, 0, 0));
-
+   
       JButton jbMsg;
       jbMsg = new JButton("Message");
       JButton jbConnect;
@@ -78,8 +78,8 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       JLabel jlAddress = new JLabel("Address: ");
       jlAddress.setHorizontalAlignment(SwingConstants.RIGHT);
       msgViewTop.add(jlAddress);
-
-       JTextField jtfServer = new JTextField();
+   
+      JTextField jtfServer = new JTextField();
       msgViewTop.add(jtfServer);
       jtfServer.setColumns(10);
    	
@@ -98,7 +98,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       JPanel msgViewBot = new JPanel();
       msgView.add(msgViewBot);
       msgViewBot.setLayout(new GridLayout(0, 1, 0, 0));
-
+   
       msgViewBot.add(textArea);
    	
       this.setVisible(true);
@@ -113,7 +113,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    
       switch (ae.getActionCommand()){
          case "Connect":
-
+         
             System.out.println("I got in the connect case of the client");
             host = JOptionPane.showInputDialog(this,"Enter the IP address of the server",null);
             
@@ -134,35 +134,80 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
                System.out.println("Some other exception caught!");
                e.printStackTrace();
             }
-
-
+         
+         
             String name = JOptionPane.showInputDialog("Enter username: ");
-
+         
             System.out.println("The client received the name " + name + " from the login frame");
             pw.println(name);
             pw.flush();
             break;
-
+      
          case "Send":
-             System.out.println("Send case reached");
+            System.out.println("Send case reached");
+             /*
              pw.println(jtfFrom.getText());
              pw.flush();
              System.out.println(jtfFrom.getText());
-
+         
              pw.println(jtfTo.getText());
              pw.flush();
              System.out.println(jtfTo.getText());
-
+         
              pw.println(textArea.getText());
              pw.flush();
              System.out.println(textArea.getText());
-
+             */
+            try {
+            
+               pw.println("HELO");
+               pw.flush();
+               System.out.println("HELO");
+               if(br.readLine().substring(0,3).equals("250")){
+                  pw.println("MAIL FROM:<" +jtfFrom.getText() + ">");
+                  pw.flush();
+                  System.out.println("MAIL FROM");
+                  if(br.readLine().substring(0,3).equals("250")){
+                     pw.println("RCPT TO:<" +jtfTo.getText() + ">");
+                     pw.flush();
+                     System.out.println("RCPT TO");
+                     if(br.readLine().substring(0,3).equals("250")){
+                        pw.println("DATA");
+                        pw.flush();
+                        System.out.println("DATA");
+                        if(br.readLine().substring(0,3).equals("354")){
+                           for(String s : textArea.getText().split("\\n")){
+                              pw.println(s);
+                              pw.flush();
+                           }
+                           if(br.readLine().substring(0,3).equals("250")){
+                              pw.println("QUIT");
+                              pw.flush();
+                              System.out.println("QUIT");
+                              if(br.readLine().substring(0,3).equals("221")){
+                                 System.out.println("Victory");
+                              }
+                           
+                           }
+                        
+                        }
+                     
+                     }
+                  }
+               
+               }
+            
+            
+            } catch(IOException ioe){
+               System.out.println(ioe);
+            }
+            
             break;
-          case "Messages":
-              System.out.println("In the 'messages' case");
-              pw.println("Show mail");
-              break;
-
+         case "Messages":
+            System.out.println("In the 'messages' case");
+            pw.println("Show mail");
+            break;
+      
       }
    }
 }
