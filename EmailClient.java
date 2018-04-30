@@ -14,7 +14,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class EmailClient extends JFrame implements ActionListener,EmailConstants {
-    String values = "abcdefghijklmnopqrstuvwxyz "; 
+
     //Server-Client variables
    private BufferedReader br;
    private PrintWriter pw;
@@ -25,7 +25,6 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    private JTextField jtfTo;
    private JTextField jtfFrom;
    private JTextArea textArea = new JTextArea();
-   private JRadioButton jrbEncrypt;
 
    /*Main */
    public static void main(String[] args) {
@@ -39,11 +38,11 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       this.setSize(950, 600);
       this.setTitle("Email Client");
       this.setLocationRelativeTo(null);
-   	
+      this.setDefaultCloseOperation(EXIT_ON_CLOSE);
       JPanel inbox = new JPanel();
       getContentPane().add(inbox,BorderLayout.WEST);
       inbox.setLayout(new GridLayout(8, 0, 0, 0));
-
+   
       JButton jbMsg;
       jbMsg = new JButton("Message");
       JButton jbConnect;
@@ -79,12 +78,12 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       JLabel jlAddress = new JLabel("Address: ");
       jlAddress.setHorizontalAlignment(SwingConstants.RIGHT);
       msgViewTop.add(jlAddress);
-
-       JTextField jtfServer = new JTextField();
+   
+      JTextField jtfServer = new JTextField();
       msgViewTop.add(jtfServer);
       jtfServer.setColumns(10);
    	
-      jrbEncrypt = new JRadioButton("Encrypt Message");
+      JRadioButton jrbEncrypt = new JRadioButton("Encrypt Message");
       msgViewTop.add(jrbEncrypt);
    	
       JLabel label = new JLabel("");
@@ -99,7 +98,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       JPanel msgViewBot = new JPanel();
       msgView.add(msgViewBot);
       msgViewBot.setLayout(new GridLayout(0, 1, 0, 0));
-
+   
       msgViewBot.add(textArea);
    	
       this.setVisible(true);
@@ -114,12 +113,12 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    
       switch (ae.getActionCommand()){
          case "Connect":
-
+         
             System.out.println("I got in the connect case of the client");
             host = JOptionPane.showInputDialog(this,"Enter the IP address of the server",null);
             
             try{
-               s = new Socket(host,PORT);
+               s = new Socket(host,42069);
                br = new BufferedReader(new InputStreamReader(s.getInputStream()));
                pw = new PrintWriter(new PrintWriter(s.getOutputStream()));
             }
@@ -135,69 +134,100 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
                System.out.println("Some other exception caught!");
                e.printStackTrace();
             }
-
-
-            String name = JOptionPane.showInputDialog("Enter username: ");
-
-            System.out.println("The client received the name " + name + " from the login frame");
-            pw.println(name);
-            pw.flush();
+            try{
+               String p = br.readLine();
+               if(p.equals("Login required")){
+                  String name = JOptionPane.showInputDialog("Enter username: ");
+               
+                  System.out.println("The client received the name " + name + " from the login frame");
+                  pw.println(name);
+                  pw.flush();
+               
+                  String ok = br.readLine();
+                  System.out.println(ok + " ok");
+                  if(ok.equals("Ok")){
+                     System.out.println("name valid");
+                  }
+               
+               }
+            }catch(Exception e){
+            
+            }
             break;
-
+      
          case "Send":
-          if(jrbEncrypt.isSelected()) {
-          String msg = textArea.getText();
-          int shift = 3;
-          System.out.println("Encrypted Message: " + Encrypt(msg, shift));
-           // pw.println("ENCRYPT");
-            //pw.flush();
-         }
-             System.out.println("Send case reached");
+            System.out.println("Send case reached");
+             /*
              pw.println(jtfFrom.getText());
              pw.flush();
              System.out.println(jtfFrom.getText());
-
+         
              pw.println(jtfTo.getText());
              pw.flush();
              System.out.println(jtfTo.getText());
-
+         
              pw.println(textArea.getText());
              pw.flush();
              System.out.println(textArea.getText());
-
+             */
+            try {
+             pw.println("Send");
+             pw.flush();
+             if(br.readLine().substring(0,3).equals("220")){
+                  
+               pw.println("HELO");
+               pw.flush();
+               System.out.println("HELO");
+               
+               if(br.readLine().substring(0,3).equals("250")){
+                  pw.println("MAIL FROM:<" +jtfFrom.getText() + ">");
+                  pw.flush();
+                  System.out.println("MAIL FROM");
+                  if(br.readLine().substring(0,3).equals("250")){
+                     pw.println("RCPT TO:<" +jtfTo.getText() + ">");
+                     pw.flush();
+                     System.out.println("RCPT TO");
+                     if(br.readLine().substring(0,3).equals("250")){
+                        pw.println("DATA");
+                        pw.flush();
+                        System.out.println("DATA");
+                        String three = br.readLine();
+                        System.out.println(three);
+                           
+                        if(three.substring(0,3).equals("354")){
+                           System.out.println("got 354");
+                           for(String s : textArea.getText().split("\\n")){
+                              pw.println(s);
+                              pw.flush();
+                           }
+                           if(br.readLine().substring(0,3).equals("250")){
+                              pw.println("QUIT");
+                              pw.flush();
+                              System.out.println("QUIT");
+                              if(br.readLine().substring(0,3).equals("221")){
+                                 System.out.println("Victory");
+                              }
+                              
+                           }
+                           
+                        }
+                        
+                     }
+                  }
+                  
+               }
+               
+            }  
+            } catch(IOException ioe){
+               System.out.println(ioe);
+            }
+            
             break;
-          case "Messages":
-              System.out.println("In the 'messages' case");
-              pw.println("Show mail");
-              break;
-
+         case "Messages":
+            System.out.println("In the 'messages' case");
+            pw.println("Show mail");
+            break;
+      
       }
    }
-   
-      public String Encrypt(String msg, int shift){
-     
-     
-      char charEnc;
-      int valEnc;
-      int newEnc;
-      String encrypted = "";
-      msg = msg.toLowerCase();
-      String [] string = msg.split(" ");
-      
-      for (int i = 0; i < msg.length(); i++) {
-         charEnc = msg.charAt(i);
-         if(Character.isLetter(charEnc)){
-            valEnc = values.indexOf(charEnc);
-         
-            newEnc = (shift + valEnc) % values.length();
-            encrypted += values.charAt(newEnc);
-         }else{
-            encrypted += (char)charEnc;
-            
-         }//end if else
-      }//end for
-      return encrypted;
-   
-   
-   }//end decipher
 }
