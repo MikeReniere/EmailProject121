@@ -196,6 +196,10 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
    }
    
    public void smtp(String confirmed, File f) {
+      String newAddress="";
+      String newTo ="";
+      String newFrom = "";
+      String newMsg = ""; 
       try {
          Message m = new Message();
          pw.println("220");
@@ -207,11 +211,17 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
             String from = br.readLine();
             if(from.substring(0,9).equals("MAIL FROM")){
                m.setFrom(from.substring(from.indexOf('<'), from.length() -1));
+               newFrom = (from.substring(from.indexOf('<'), from.length() -1));
                pw.println("250");
                pw.flush();
                String to = br.readLine();
                if(to.substring(0,7).equals("RCPT TO")){
                   m.setTo(to.substring(to.indexOf('<'), to.length() -1));
+                  if(to.indexOf('@') != -1){
+                     newAddress = to.substring(to.indexOf('@')); 
+                     newTo = to.substring(0, to.indexOf('@'));
+                  }
+                     
                   pw.println("250");
                   pw.flush();
                   System.out.println("sent here");
@@ -248,18 +258,19 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
                
          }
       
+         
             
          BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
             
-         bwFile.write("From: " + m.getFrom());
+         bwFile.write("From:\n" + m.getFrom() + "\n");
          bwFile.flush();
          bwFile.newLine();
             
-         bwFile.write("To: " + m.getTo());
+         bwFile.write("To:\n" + m.getTo()+ "\n");
          bwFile.flush();
          bwFile.newLine();
             
-         bwFile.write("Message\n: " + m.getMessage());
+         bwFile.write("Message:\n" + m.getMessage()+ "\n\n");
          bwFile.flush();
          bwFile.newLine();
             
@@ -279,6 +290,95 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
       } catch(IOException ioe){
          System.out.println(ioe);
       }
+      
+      //BEGIN FORWARDING
+      if(!newAddress.equals("")){
+         try{
+            Socket s = new Socket(newAddress,PORT);
+            br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            pw = new PrintWriter(new PrintWriter(s.getOutputStream()));
+               
+            String p = br.readLine();
+            if(p.equals("Login required")){
+               pw.println("guest");
+               pw.flush();
+               
+               String ok = br.readLine();
+               System.out.println(ok + " ok");
+               if(ok.equals("Ok")){
+                  System.out.println("name valid");
+               }
+               
+            }
+         
+               
+            try {
+               pw.println("Send");
+               pw.flush();
+               if(br.readLine().substring(0,3).equals("220")){
+                  
+                  pw.println("HELO");
+                  pw.flush();
+                  System.out.println("HELO");
+               
+                  if(br.readLine().substring(0,3).equals("250")){
+                     pw.println("MAIL FROM:<" + newFrom + ">");
+                     pw.flush();
+                     System.out.println("MAIL FROM");
+                     if(br.readLine().substring(0,3).equals("250")){
+                        pw.println("RCPT TO:<" + newTo + ">");
+                        pw.flush();
+                        System.out.println("RCPT TO");
+                        if(br.readLine().substring(0,3).equals("250")){
+                           pw.println("DATA");
+                           pw.flush();
+                           System.out.println("DATA");
+                           String three = br.readLine();
+                           System.out.println(three);
+                           
+                           if(three.substring(0,3).equals("354")){
+                              System.out.println("got 354");
+                              for(String st : newMsg.split("\\n")){
+                                 pw.println(st);
+                                 pw.flush();
+                              }
+                              if(br.readLine().substring(0,3).equals("250")){
+                                 pw.println("QUIT");
+                                 pw.flush();
+                                 System.out.println("QUIT");
+                                 if(br.readLine().substring(0,3).equals("221")){
+                                    System.out.println("Victory");
+                                 }
+                              
+                              }
+                           
+                           }
+                        
+                        }
+                     }
+                  
+                  }
+               
+               }  
+            } catch(IOException ioe){
+               System.out.println(ioe);
+            }
+         }
+         catch(UnknownHostException uhe){
+            System.out.println("Unknown Host Exception caught");
+            uhe.printStackTrace();
+         }
+         catch (IOException ioe){
+            System.out.println("IO exception caught");
+            ioe.printStackTrace();
+         }
+         catch (Exception e){
+            System.out.println("Some other exception caught!");
+            e.printStackTrace();
+         }
+           
+      
+      } //end forwarding
    }
 }
 //login

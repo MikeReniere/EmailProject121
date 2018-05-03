@@ -110,7 +110,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
             host = JOptionPane.showInputDialog(this,"Enter the IP address of the server",null);
             
             try{
-               s = new Socket(host,42069);
+               s = new Socket(host,PORT);
                br = new BufferedReader(new InputStreamReader(s.getInputStream()));
                pw = new PrintWriter(new PrintWriter(s.getOutputStream()));
             }
