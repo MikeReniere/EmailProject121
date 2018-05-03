@@ -2,6 +2,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.*;
 import java.io.*;
+import java.nio.file.*;
 import java.awt.*;
 import javax.swing.*;
 import java.util.*;
@@ -10,11 +11,12 @@ import java.util.*;
 public class EmailServer extends JFrame implements ActionListener,EmailConstants {
 
    //Mailboxes
+   String sendTo = "";
    private ArrayList<Mailbox> boxes = new ArrayList<>();
    private Mailbox alex = new Mailbox("alex");
-   private Mailbox alex2 = new Mailbox("alex2");
-   private Mailbox alex3 = new Mailbox("alex3");
-   private Mailbox alex4 = new Mailbox("alex4");
+   private Mailbox alex2 = new Mailbox("dan");
+   private Mailbox alex3 = new Mailbox("mike");
+   private Mailbox alex4 = new Mailbox("hamis");
    private Mailbox guest = new Mailbox("guest");
    final String dir = System.getProperty("user.dir");
 
@@ -121,241 +123,62 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
          System.out.println("Connected to " + client.getInetAddress().getHostAddress());
          String confirmed ="";
          try {
+            pw.println("Login required");
+            pw.flush();
             String name = br.readLine();
             System.out.println("The name received from the client is " + name);
             Account act = new Account();
             if(act.LogInUser(name)){
                System.out.println("User " + name + " logged in.");
                confirmed = name;
-            }
-         
-            System.out.println("The name confirmed is " + confirmed);
-            System.out.println("if the name of the mailbox is " + alex.getName());
-         
-            if(confirmed.equals(alex.getName())){
-               System.out.println("I am in the if 'confirmed == alex.getName()' ");
-               
-               Message m = new Message();
-               /*
-               String from = br.readLine();
-               m.setFrom(from);
-               System.out.println("From: " + m.getFrom());
-            
-               String to = br.readLine();
-               m.setTo(to);
-               System.out.println("To: " + m.getTo());
-            
-               String message = br.readLine();
-               m.setMessage(message);
-               System.out.println("Message: " + m.getMessage());
-               */
-               
-               if(br.readLine().substring(0,4).equals("HELO")){
-                  System.out.println("got to HELO");
-                  pw.println("250");
-                  pw.flush();
-                  String from = br.readLine();
-                  if(from.substring(0,9).equals("MAIL FROM")){
-                     m.setFrom(from.substring(from.indexOf('<'), from.length() -1));
-                     pw.println("250");
-                     pw.flush();
-                     String to = br.readLine();
-                     if(to.substring(0,7).equals("RCPT TO")){
-                        m.setTo(to.substring(to.indexOf('<'), to.length() -1));
-                        pw.println("250");
-                        pw.flush();
-                        System.out.println("sent here");
-                        if(br.readLine().substring(0,4).equals("DATA")){
-                           pw.println("354");
-                           pw.flush();
-                           ArrayList<String> msg = new ArrayList<String>();
-                           boolean loop = true;
-                           while(loop){
-                              String line = br.readLine();
-                              if(!line.equals("."))
-                                 msg.add(line);
-                              else {
-                                 loop = false;
-                                 String message = "";
-                                 for(String s : msg){
-                                    message+=s;
-                                 }
-                                 m.setMessage(message);
-                                 System.out.println("Message: " + m.getMessage());
-                                 pw.println("250");
-                                 pw.flush();
-                                 if(br.readLine().substring(0,4).equals("QUIT")){
-                                    pw.println("221");
-                                    pw.flush();
-                                 }
-                              }
-                           }
-                                                  
-                        }
-                     
-                     }
-                  }
-               
-               }
-            
+               pw.println("Ok");
+               pw.flush();
                
                
-               File f = new File(dir + File.separator +  "alex.txt");
-               BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
-            
-               bwFile.write("From: " + m.getFrom());
-               bwFile.flush();
-               bwFile.newLine();
-            
-               bwFile.write("To: " + m.getTo());
-               bwFile.flush();
-               bwFile.newLine();
-            
-               bwFile.write("Message\n: " + m.getMessage());
-               bwFile.flush();
-               bwFile.newLine();
-            
-            
-               alex.add(m);
-            
-               for(Mailbox mb: boxes){
-                  System.out.println("Name of the mailbox "+ mb.getName()+"\n");
-                  for( Message ms : mb ){
-                     if(ms != null) {
-                        System.out.println("Message inside mailbox" + ms.getMessage());
-                        System.out.println("From: " + ms.getFrom());
-                        System.out.println("Sent to: " + ms.getTo());
-                     }
-                  }
+               System.out.println("The name confirmed is " + confirmed);
                
-               }
             
-            }
-            else if(confirmed.equals(alex2.getName())){
-               System.out.println("I am in the if 'confirmed == alex2.getName()' ");
-            
-               Message m = new Message();
-               String from = br.readLine();
-               m.setFrom(from);
-               System.out.println("From: " + m.getFrom());
-            
-               String to = br.readLine();
-               m.setTo(to);
-               System.out.println("To: " + m.getTo());
-            
-               String message = br.readLine();
-               m.setMessage(message);
-               System.out.println("Message: " + m.getMessage());
-            
-               File f = new File("C:\\Users\\alexl\\Desktop\\Java 2\\Final Project V2\\src\\alex2.txt");
-               BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
-            
-               alex.add(m);
-            
-               for(Mailbox mb: boxes){
-                  System.out.println("Name of the mailbox "+ mb.getName()+"\n");
-                  for( Message ms : mb ){
-                     if(ms != null)
-                        System.out.println("Message inside mailbox" + ms.getMessage());
-                  }
-               }
-            
+               File f = new File(dir + File.separator +  confirmed + ".txt");
+               System.out.println(f);
+                  
                String cmd = br.readLine();
-            }
-            else if(confirmed.equals(alex3.getName())){
-               System.out.println("I am in the if 'confirmed == alex3.getName()' ");
-            
-               Message m = new Message();
-               String from = br.readLine();
-               System.out.println("From: " + from);
-               m.setFrom(from);
-            
-               String to = br.readLine();
-               System.out.println("To: " + to);
-               m.setTo(to);
-            
-               String message = br.readLine();
-               System.out.println("Message: " + message);
-               m.setMessage(message);
-            
-               File f = new File("C:\\Users\\alexl\\Desktop\\Java 2\\Final Project V2\\src\\alex3.txt");
-               BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
-            
-               alex.add(m);
-            
-               for(Mailbox mb: boxes){
-                  System.out.println("Name of the mailbox "+ mb.getName()+"\n");
-                  for( Message ms : mb ){
-                     if(ms != null)
-                        System.out.println("Message inside mailbox" + ms.getMessage());
+               if (cmd.equals("Send")){
+                  if(confirmed.equals(alex.getName())){
+                     System.out.println("I am in the if 'confirmed == alex.getName()' ");
+                     smtp(confirmed, f);
+                  
                   }
-               
+                  else if(confirmed.equals(alex2.getName())){
+                     System.out.println("I am in the if 'confirmed == alex2.getName()' ");
+                     smtp(confirmed, f);
+                  }
+                  else if(confirmed.equals(alex3.getName())){
+                     System.out.println("I am in the if 'confirmed == alex3.getName()' ");
+                     smtp(confirmed, f);
+                  
+                  }
+                  else if(confirmed.equals(alex4.getName())){
+                     System.out.println("I am in the if 'confirmed == alex4.getName()' ");
+                     smtp(confirmed, f);     
+                  }
+                  else if(confirmed.equals(guest.getName())){
+                     System.out.println("I am in the if 'confirmed == guest.getName()' ");
+                     smtp(confirmed, f);
+                  }
                }
-            
-            }
-            else if(confirmed.equals(alex4.getName())){
-               System.out.println("I am in the if 'confirmed == alex4.getName()' ");
-            
-               Message m = new Message();
-               String from = br.readLine();
-               System.out.println("From: " + from);
-               m.setFrom(from);
-            
-               String to = br.readLine();
-               System.out.println("To: " + to);
-               m.setTo(to);
-            
-               String message = br.readLine();
-               System.out.println("Message: " + message);
-               m.setMessage(message);
-            
-               File f = new File("C:\\Users\\alexl\\Desktop\\Java 2\\Final Project V2\\src\\alex4.txt");
-               BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
-            
-               alex.add(m);
-            
-               for(Mailbox mb: boxes){
-                  System.out.println("Name of the mailbox "+ mb.getName()+"\n");
-                  for( Message ms : mb ){
-                     if(ms != null)
-                        System.out.println("Message inside mailbox" + ms.getMessage());
-                  }
-               
+               //SHOW INBOX
+               if (cmd.equals("Show mail")){
+                  System.out.println(f.getPath());
+                  Desktop.getDesktop().open(f);
                }
-            
-            }
-            else if(confirmed.equals(guest.getName())){
-               System.out.println("I am in the if 'confirmed == guest.getName()' ");
-            
-               Message m = new Message();
-               String from = br.readLine();
-               System.out.println("From: " + from);
-               m.setFrom(from);
-            
-               String to = br.readLine();
-               System.out.println("To: " + to);
-               m.setTo(to);
-            
-               String message = br.readLine();
-               System.out.println("Message: " + message);
-               m.setMessage(message);
-            
-               File f = new File("C:\\Users\\alexl\\Desktop\\Java 2\\Final Project V2\\src\\guest.txt");
-               BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
-            
-               alex.add(m);
-            
-               for(Mailbox mb: boxes){
-                  System.out.println("Name of the mailbox "+ mb.getName()+"\n");
-                  for( Message ms : mb ){
-                     if(ms != null)
-                        System.out.println("Message inside mailbox" + ms.getMessage());
-                  }
+               else{
+                  JOptionPane.showMessageDialog(jbStart,"Oops, something went wrong. ");
                
                }
             }
             else{
-               JOptionPane.showMessageDialog(jbStart,"Something went wrong!");
+               JOptionPane.showMessageDialog(jbStart,"Guests login with \"guest\"");
+               
             }
          
          } catch (IOException ioe) {
@@ -371,6 +194,197 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
       
       
       }
+   }
+   
+   public void smtp(String confirmed, File f) {
+      String newAddress="";
+      String newTo ="";
+      String newFrom = "";
+      String newMsg = ""; 
+      try {
+         Message m = new Message();
+         pw.println("220");
+         pw.flush();
+         if(br.readLine().substring(0,4).equals("HELO")){
+            System.out.println("got to HELO");
+            pw.println("250");
+            pw.flush();
+            String from = br.readLine();
+            if(from.substring(0,9).equals("MAIL FROM")){
+               m.setFrom(from.substring(from.indexOf('<'), from.length() -1));
+               newFrom = (from.substring(from.indexOf('<'), from.length() -1));
+               pw.println("250");
+               pw.flush();
+               String to = br.readLine();
+               if(to.substring(0,7).equals("RCPT TO")){
+                  m.setTo(to.substring(to.indexOf('<'), to.length() -1));
+                  if(to.indexOf('@') != -1){
+                     newAddress = to.substring(to.indexOf('@')); 
+                     newTo = to.substring(0, to.indexOf('@'));
+                  }
+                     
+                  pw.println("250");
+                  pw.flush();
+                  System.out.println("sent here");
+                  if(br.readLine().substring(0,4).equals("DATA")){
+                     pw.println("354");
+                     pw.flush();
+                     ArrayList<String> msg = new ArrayList<String>();
+                     boolean loop = true;
+                     while(loop){
+                        String line = br.readLine();
+                        if(!line.equals("."))
+                           msg.add(line);
+                        else {
+                           loop = false;
+                           String message = "";
+                           for(String s : msg){
+                              message+=s;
+                           }
+                           m.setMessage(message);
+                           System.out.println("Message: " + m.getMessage());
+                           pw.println("250");
+                           pw.flush();
+                           if(br.readLine().substring(0,4).equals("QUIT")){
+                              pw.println("221");
+                              pw.flush();
+                           }
+                        }
+                     }
+                                                  
+                  }
+                     
+               }
+            }
+               
+         }
+      
+         
+            
+         BufferedWriter bwFile = new BufferedWriter(new FileWriter(f,true));
+            
+         bwFile.write("From:\n" + m.getFrom() + "\n");
+         bwFile.flush();
+         bwFile.newLine();
+            
+         bwFile.write("To:\n" + m.getTo()+ "\n");
+         bwFile.flush();
+         bwFile.newLine();
+         sendTo = m.getTo();   
+         bwFile.write("Message:\n" + m.getMessage()+ "\n\n");
+         bwFile.flush();
+         bwFile.newLine();
+            
+         // alex.add(m);
+            
+         for(Mailbox mb: boxes){
+            if(mb.getName().equals(sendTo)){
+               mb.add(m);
+            }
+         }   
+         for(Mailbox mb: boxes){
+            System.out.println("Name of the mailbox "+ mb.getName()+"\n");
+            for( Message ms : mb ){
+               if(ms != null) {
+                  System.out.println("Message inside mailbox" + ms.getMessage());
+                  System.out.println("From: " + ms.getFrom());
+                  System.out.println("Sent to: " + ms.getTo());
+               }
+            }
+               
+         }
+      } catch(IOException ioe){
+         System.out.println(ioe);
+      }
+      
+      //BEGIN FORWARDING
+      if(!newAddress.equals("")){
+         try{
+            Socket s = new Socket(newAddress,PORT);
+            br = new BufferedReader(new InputStreamReader(s.getInputStream()));
+            pw = new PrintWriter(new PrintWriter(s.getOutputStream()));
+               
+            String p = br.readLine();
+            if(p.equals("Login required")){
+               pw.println("guest");
+               pw.flush();
+               
+               String ok = br.readLine();
+               System.out.println(ok + " ok");
+               if(ok.equals("Ok")){
+                  System.out.println("name valid");
+               }
+               
+            }
+         
+               
+            try {
+               pw.println("Send");
+               pw.flush();
+               if(br.readLine().substring(0,3).equals("220")){
+                  
+                  pw.println("HELO");
+                  pw.flush();
+                  System.out.println("HELO");
+               
+                  if(br.readLine().substring(0,3).equals("250")){
+                     pw.println("MAIL FROM:<" + newFrom + ">");
+                     pw.flush();
+                     System.out.println("MAIL FROM");
+                     if(br.readLine().substring(0,3).equals("250")){
+                        pw.println("RCPT TO:<" + newTo + ">");
+                        pw.flush();
+                        System.out.println("RCPT TO");
+                        if(br.readLine().substring(0,3).equals("250")){
+                           pw.println("DATA");
+                           pw.flush();
+                           System.out.println("DATA");
+                           String three = br.readLine();
+                           System.out.println(three);
+                           
+                           if(three.substring(0,3).equals("354")){
+                              System.out.println("got 354");
+                              for(String st : newMsg.split("\\n")){
+                                 pw.println(st);
+                                 pw.flush();
+                              }
+                              if(br.readLine().substring(0,3).equals("250")){
+                                 pw.println("QUIT");
+                                 pw.flush();
+                                 System.out.println("QUIT");
+                                 if(br.readLine().substring(0,3).equals("221")){
+                                    System.out.println("Victory");
+                                 }
+                              
+                              }
+                           
+                           }
+                        
+                        }
+                     }
+                  
+                  }
+               
+               }  
+            } catch(IOException ioe){
+               System.out.println(ioe);
+            }
+         }
+         catch(UnknownHostException uhe){
+            System.out.println("Unknown Host Exception caught");
+            uhe.printStackTrace();
+         }
+         catch (IOException ioe){
+            System.out.println("IO exception caught");
+            ioe.printStackTrace();
+         }
+         catch (Exception e){
+            System.out.println("Some other exception caught!");
+            e.printStackTrace();
+         }
+           
+      
+      } //end forwarding
    }
 }
 //login
