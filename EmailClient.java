@@ -1,4 +1,3 @@
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -12,9 +11,13 @@ import java.net.*;
 import java.sql.SQLOutput;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import java.util.*;
 
 public class EmailClient extends JFrame implements ActionListener,EmailConstants {
-
+   String msg;
+   static final String START = "--Begin encrypted message--\n";
+   static final String END = "\n--End encrypted message--";
+   private String values = "abcdefghijklmnopqrstuvwxyz ";
     //Server-Client variables
    private BufferedReader br;
    private PrintWriter pw;
@@ -25,6 +28,8 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    private JTextField jtfTo;
    private JTextField jtfFrom;
    private JTextArea textArea = new JTextArea();
+    JRadioButton jrbEncrypt = new JRadioButton("Encrypt Message");
+
 
    /*Main */
    public static void main(String[] args) {
@@ -44,7 +49,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       inbox.setLayout(new GridLayout(8, 0, 0, 0));
    
       JButton jbMsg;
-      jbMsg = new JButton("Message");
+      jbMsg = new JButton("Open Inbox");
       JButton jbConnect;
       jbConnect = new JButton("Connect");
       inbox.add(jbConnect);
@@ -75,16 +80,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       msgViewTop.add(jtfFrom);
       jtfFrom.setColumns(10);
    	
-      JLabel jlAddress = new JLabel("Address: ");
-      jlAddress.setHorizontalAlignment(SwingConstants.RIGHT);
-      msgViewTop.add(jlAddress);
-   
-      JTextField jtfServer = new JTextField();
-      msgViewTop.add(jtfServer);
-      jtfServer.setColumns(10);
-   	
-      JRadioButton jrbEncrypt = new JRadioButton("Encrypt Message");
-      msgViewTop.add(jrbEncrypt);
+           msgViewTop.add(jrbEncrypt);
    	
       JLabel label = new JLabel("");
       msgViewTop.add(label);
@@ -104,6 +100,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       this.setVisible(true);
    
       jbConnect.addActionListener(this);
+      jbMsg.addActionListener(this);
       jbSend.addActionListener(this);
    
    }
@@ -118,7 +115,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
             host = JOptionPane.showInputDialog(this,"Enter the IP address of the server",null);
             
             try{
-               s = new Socket(host,42069);
+               s = new Socket(host,PORT);
                br = new BufferedReader(new InputStreamReader(s.getInputStream()));
                pw = new PrintWriter(new PrintWriter(s.getOutputStream()));
             }
@@ -156,20 +153,14 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
             break;
       
          case "Send":
+            String message = textArea.getText().toLowerCase();
+            String encrypt = Decipher(message, 3);
             System.out.println("Send case reached");
-             /*
-             pw.println(jtfFrom.getText());
-             pw.flush();
-             System.out.println(jtfFrom.getText());
-         
-             pw.println(jtfTo.getText());
-             pw.flush();
-             System.out.println(jtfTo.getText());
-         
-             pw.println(textArea.getText());
-             pw.flush();
-             System.out.println(textArea.getText());
-             */
+            if(jrbEncrypt.isSelected()){
+            textArea.setText(START);
+            textArea.append(encrypt);
+            textArea.append(END);
+            }
             try {
              pw.println("Send");
              pw.flush();
@@ -223,11 +214,40 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
             }
             
             break;
-         case "Messages":
-            System.out.println("In the 'messages' case");
+         case "Open Inbox":
+            System.out.println("In the 'open' case");
             pw.println("Show mail");
+            pw.flush();
             break;
       
       }
    }
+   
+    public String Decipher(String msg, int shift){
+     
+     
+      char charEnc;
+      int valEnc;
+      int newEnc;
+      String encrypted = "";
+      msg = textArea.getText().toLowerCase();
+      String [] string = msg.split(" ");
+      
+      for (int i = 0; i < msg.length(); i++) {
+         charEnc = msg.charAt(i);
+         if(Character.isLetter(charEnc)){
+            valEnc = values.indexOf(charEnc);
+         
+            newEnc = (shift + valEnc) % values.length();
+            encrypted += values.charAt(newEnc);
+         }else{
+            encrypted += (char)charEnc;
+            
+         }//end if else
+      }//end for
+      return encrypted;
+   
+   
+   }//end decipher
+
 }
