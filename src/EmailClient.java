@@ -1,3 +1,4 @@
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,13 +38,13 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       this.setSize(950, 600);
       this.setTitle("Email Client");
       this.setLocationRelativeTo(null);
-      this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+   	
       JPanel inbox = new JPanel();
       getContentPane().add(inbox,BorderLayout.WEST);
       inbox.setLayout(new GridLayout(8, 0, 0, 0));
    
       JButton jbMsg;
-      jbMsg = new JButton("Open Inbox");
+      jbMsg = new JButton("Message");
       JButton jbConnect;
       jbConnect = new JButton("Connect");
       inbox.add(jbConnect);
@@ -74,6 +75,14 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       msgViewTop.add(jtfFrom);
       jtfFrom.setColumns(10);
    	
+      JLabel jlAddress = new JLabel("Address: ");
+      jlAddress.setHorizontalAlignment(SwingConstants.RIGHT);
+      msgViewTop.add(jlAddress);
+   
+      JTextField jtfServer = new JTextField();
+      msgViewTop.add(jtfServer);
+      jtfServer.setColumns(10);
+   	
       JRadioButton jrbEncrypt = new JRadioButton("Encrypt Message");
       msgViewTop.add(jrbEncrypt);
    	
@@ -95,7 +104,6 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       this.setVisible(true);
    
       jbConnect.addActionListener(this);
-      jbMsg.addActionListener(this);
       jbSend.addActionListener(this);
    
    }
@@ -126,61 +134,48 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
                System.out.println("Some other exception caught!");
                e.printStackTrace();
             }
-            try{
-               String p = br.readLine();
-               if(p.equals("Login Required")){
-                  String name = JOptionPane.showInputDialog("Enter username: ");
-               
-                  System.out.println("The client received the name " + name + " from the login frame");
-                  pw.println(name);
-                  pw.flush();
-               
-                  String ok = br.readLine();
-                  System.out.println(ok + " ok");
-                  if(ok.equals("Ok")){
-                     System.out.println("name valid");
-                  }
-               
-               }
-            }catch(Exception e){
-            
-            }
+         
+         
+            String name = JOptionPane.showInputDialog("Enter username: ");
+         
+            System.out.println("The client received the name " + name + " from the login frame");
+            pw.println(name);
+            pw.flush();
             break;
       
          case "Send":
             System.out.println("Send case reached");
-
-            //if button pressed
-               //encrypt message (shift 3)
-               //append tags
-               
-            
-            try {
-             pw.println("Send");
+             /*
+             pw.println(jtfFrom.getText());
              pw.flush();
-             if(br.readLine().substring(0,3).equals("220")){
-                  
+             System.out.println(jtfFrom.getText());
+         
+             pw.println(jtfTo.getText());
+             pw.flush();
+             System.out.println(jtfTo.getText());
+         
+             pw.println(textArea.getText());
+             pw.flush();
+             System.out.println(textArea.getText());
+             */
+            try {
+            
                pw.println("HELO");
                pw.flush();
                System.out.println("HELO");
-               
                if(br.readLine().substring(0,3).equals("250")){
-                  pw.println("MAIL FROM:" +jtfFrom.getText());
+                  pw.println("MAIL FROM:<" +jtfFrom.getText() + ">");
                   pw.flush();
                   System.out.println("MAIL FROM");
                   if(br.readLine().substring(0,3).equals("250")){
-                     pw.println("RCPT TO:" +jtfTo.getText());
+                     pw.println("RCPT TO:<" +jtfTo.getText() + ">");
                      pw.flush();
                      System.out.println("RCPT TO");
                      if(br.readLine().substring(0,3).equals("250")){
                         pw.println("DATA");
                         pw.flush();
                         System.out.println("DATA");
-                        String three = br.readLine();
-                        System.out.println(three);
-                           
-                        if(three.substring(0,3).equals("354")){
-                           System.out.println("got 354");
+                        if(br.readLine().substring(0,3).equals("354")){
                            for(String s : textArea.getText().split("\\n")){
                               pw.println(s);
                               pw.flush();
@@ -192,26 +187,25 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
                               if(br.readLine().substring(0,3).equals("221")){
                                  System.out.println("Victory");
                               }
-                              
-                           }
                            
-                        }
+                           }
                         
+                        }
+                     
                      }
                   }
-                  
-               }
                
-            }  
+               }
+            
+            
             } catch(IOException ioe){
                System.out.println(ioe);
             }
             
             break;
-         case "Open Inbox":
-            System.out.println("In the 'open' case");
+         case "Messages":
+            System.out.println("In the 'messages' case");
             pw.println("Show mail");
-            pw.flush();
             break;
       
       }
