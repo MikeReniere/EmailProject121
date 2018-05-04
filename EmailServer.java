@@ -122,9 +122,13 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
          System.out.println("Connected to " + client.getInetAddress().getHostAddress());
          String confirmed ="";
          try {
-            pw.println("Login required");
+            pw.println("Login Required");
             pw.flush();
             String name = br.readLine();
+            if(name.indexOf('@') != -1){
+               name = name.substring(0, name.indexOf('@'));
+            }
+        
             System.out.println("The name received from the client is " + name);
             Account act = new Account();
             if(act.LogInUser(name)){
@@ -210,19 +214,22 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
             pw.flush();
             String from = br.readLine();
             if(from.substring(0,9).equals("MAIL FROM")){
-               m.setFrom(from.substring(from.indexOf('<'), from.length() -1));
-               newFrom = (from.substring(from.indexOf('<'), from.length() -1));
-               pw.println("250");
+               m.setFrom(from.substring(from.indexOf(':')+1, from.length() ));
+               newFrom = (from.substring(from.indexOf(':')+1, from.length() ));
+               pw.println("250 Ok");
                pw.flush();
                String to = br.readLine();
+               System.out.println(to);
                if(to.substring(0,7).equals("RCPT TO")){
-                  m.setTo(to.substring(to.indexOf('<'), to.length() -1));
+                  m.setTo(to.substring(to.indexOf(':')+1, to.length()));
+                  System.out.println(to);
                   if(to.indexOf('@') != -1){
-                     newAddress = to.substring(to.indexOf('@')); 
+                     System.out.println("ooooooo");
+                     newAddress = to.substring(to.indexOf('@')+1); 
                      newTo = to.substring(0, to.indexOf('@'));
                   }
                      
-                  pw.println("250");
+                  pw.println("250 Ok");
                   pw.flush();
                   System.out.println("sent here");
                   if(br.readLine().substring(0,4).equals("DATA")){
@@ -238,16 +245,20 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
                            loop = false;
                            String message = "";
                            for(String s : msg){
-                              message+=s;
+                              message+=(s+"\n");
                            }
                            m.setMessage(message);
+                           newMsg = message+".";
                            System.out.println("Message: " + m.getMessage());
-                           pw.println("250");
+                           pw.println("250 Ok");
                            pw.flush();
-                           if(br.readLine().substring(0,4).equals("QUIT")){
+                           String q = br.readLine();
+                           System.out.println("q" + q);
+                           //if(q.substring(0,4).equals("QUIT")){
+                              System.out.println("ogod");
                               pw.println("221");
                               pw.flush();
-                           }
+                           //}
                         }
                      }
                                                   
@@ -294,6 +305,7 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
       //BEGIN FORWARDING
       if(!newAddress.equals("")){
          try{
+            System.out.println("pls god");
             Socket s = new Socket(newAddress,PORT);
             br = new BufferedReader(new InputStreamReader(s.getInputStream()));
             pw = new PrintWriter(new PrintWriter(s.getOutputStream()));
@@ -322,11 +334,11 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
                   System.out.println("HELO");
                
                   if(br.readLine().substring(0,3).equals("250")){
-                     pw.println("MAIL FROM:<" + newFrom + ">");
+                     pw.println("MAIL FROM:" + newFrom);
                      pw.flush();
                      System.out.println("MAIL FROM");
                      if(br.readLine().substring(0,3).equals("250")){
-                        pw.println("RCPT TO:<" + newTo + ">");
+                        pw.println(newTo);
                         pw.flush();
                         System.out.println("RCPT TO");
                         if(br.readLine().substring(0,3).equals("250")){
@@ -335,7 +347,7 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
                            System.out.println("DATA");
                            String three = br.readLine();
                            System.out.println(three);
-                           
+                           System.out.println("Newmsg" +newMsg);
                            if(three.substring(0,3).equals("354")){
                               System.out.println("got 354");
                               for(String st : newMsg.split("\\n")){

@@ -128,7 +128,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
             }
             try{
                String p = br.readLine();
-               if(p.equals("Login required")){
+               if(p.equals("Login Required")){
                   String name = JOptionPane.showInputDialog("Enter username: ");
                
                   System.out.println("The client received the name " + name + " from the login frame");
@@ -150,6 +150,11 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
          case "Send":
             System.out.println("Send case reached");
 
+            //if button pressed
+               //encrypt message (shift 3)
+               //append tags
+               
+            
             try {
              pw.println("Send");
              pw.flush();
@@ -160,11 +165,11 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
                System.out.println("HELO");
                
                if(br.readLine().substring(0,3).equals("250")){
-                  pw.println("MAIL FROM:<" +jtfFrom.getText() + ">");
+                  pw.println("MAIL FROM:" +jtfFrom.getText());
                   pw.flush();
                   System.out.println("MAIL FROM");
                   if(br.readLine().substring(0,3).equals("250")){
-                     pw.println("RCPT TO:<" +jtfTo.getText() + ">");
+                     pw.println("RCPT TO:" +jtfTo.getText());
                      pw.flush();
                      System.out.println("RCPT TO");
                      if(br.readLine().substring(0,3).equals("250")){
