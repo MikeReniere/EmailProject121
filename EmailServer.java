@@ -218,6 +218,8 @@ public class EmailServer extends JFrame implements ActionListener,EmailConstants
                String to = br.readLine();
                if(to.substring(0,7).equals("RCPT TO")){
                   m.setTo(to.substring(to.indexOf('<'), to.length() -1));
+                  sendTo = m.getTo();
+                  System.out.println("sendTo is: " + sendTo);
                   if(to.indexOf('@') != -1){
                      newAddress = to.substring(to.indexOf('@')); 
                      newTo = to.substring(0, to.indexOf('@'));
