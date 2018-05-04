@@ -15,6 +15,7 @@ import java.util.*;
 
 public class EmailClient extends JFrame implements ActionListener,EmailConstants {
    String msg;
+   String clientMsg;
    static final String START = "--Begin encrypted message--\n";
    static final String END = "\n--End encrypted message--";
    private String values = "abcdefghijklmnopqrstuvwxyz ";
@@ -29,6 +30,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    private JTextField jtfFrom;
    private JTextArea textArea = new JTextArea();
     JRadioButton jrbEncrypt = new JRadioButton("Encrypt Message");
+   JButton jbD = new JButton("Decrypt TextArea");
 
 
    /*Main */
@@ -54,6 +56,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       jbConnect = new JButton("Connect");
       inbox.add(jbConnect);
       inbox.add(jbMsg);
+      inbox.add(jbD);
    	
       JPanel msgView = new JPanel();
       getContentPane().add(msgView,BorderLayout.CENTER);
@@ -102,6 +105,7 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
       jbConnect.addActionListener(this);
       jbMsg.addActionListener(this);
       jbSend.addActionListener(this);
+      jbD.addActionListener(this);
    
    }
 
@@ -219,6 +223,17 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
             pw.println("Show mail");
             pw.flush();
             break;
+            
+         case "Decrypt TextArea":
+                     clientMsg = textArea.getText();
+                     System.out.println("Decrypting" + clientMsg);
+                     textArea.setText(Decrypt(clientMsg, 3));
+                     // shift = Integer.parseInt(jtf.getText());
+                     //pw.println(Decrypt(clientMsg, shift));
+                     //pw.flush();
+
+         
+         break;
       
       }
    }
@@ -249,5 +264,33 @@ public class EmailClient extends JFrame implements ActionListener,EmailConstants
    
    
    }//end decipher
+   
+ public String Decrypt(String msg, int shift){
+   
+   
+      char charEnc;
+      int valEnc;
+      int newEnc;
+      String decoded = "";
+      msg = msg.toLowerCase();
+      for (int i = 0; i < msg.length(); i++) {
+         charEnc = msg.charAt(i);
+         if(Character.isLetter(charEnc)){
+            valEnc = values.indexOf(charEnc);
+            newEnc = (valEnc - shift) % values.length();
+         // check for negative
+            if (newEnc < 0) {
+               newEnc += Math.abs(values.length());
+            }
+            decoded += values.charAt(newEnc);
+         }else{
+            decoded += (char)charEnc;
+         
+         }
+      }//end for
+      return decoded;
+      
+   }//end decrypt
+
 
 }
